@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' blob:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>LumaLens</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <aside class="rail">
+    <div class="brand" aria-label="LumaLens">L<span>·</span></div>
+    <nav aria-label="メインメニュー">
+      <button class="nav active" data-view="studio" title="翻訳スタジオ" aria-label="翻訳スタジオ">◉<span>STUDIO</span></button>
+      <button class="nav" data-view="history" title="翻訳履歴" aria-label="翻訳履歴">▤<span>HISTORY</span></button>
+      <button class="nav" data-view="settings" title="設定" aria-label="設定">⚙<span>SETUP</span></button>
+    </nav>
+    <button id="helpButton" class="help" title="ショートカット">?</button>
+  </aside>
+  <main>
+    <header><div class="wordmark">LUMALENS <span>TRANSLATION STUDIO</span></div><div class="header-right"><span class="dot" id="statusDot"></span><span id="headerStatus">STANDBY</span><span class="version" id="version">1.0</span></div></header>
+    <section id="studioView" class="view studio-view">
+      <div class="workspace">
+        <div class="workspace-heading"><div><span class="eyebrow">SEE BEYOND THE WORDS</span><h1>その先の物語へ。</h1></div><button id="imageButton" class="quiet">画像を開く ↗</button><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp,image/bmp" hidden></div>
+        <div class="viewer" id="viewer">
+          <div class="viewer-bar"><span id="sourceLabel">NO SOURCE SELECTED</span><span id="frameInfo">CAPTURE / TRANSLATE / READ</span></div>
+          <div class="media-area" id="mediaArea">
+            <video id="video" autoplay muted playsinline hidden></video><img id="stillImage" alt="翻訳対象の画像" hidden>
+            <div class="empty" id="emptyState"><div class="lens-mark"><i></i><i></i><i></i><i></i><span>L</span></div><p>世界を、あなたの言葉で。</p><span>画面・ウィンドウ・画像から、物語を読み解く。</span><button id="emptySource" class="primary">キャプチャ元を選ぶ <span>↗</span></button><small>画像は端末内で文字認識。翻訳には選択したサービスを使用。</small></div>
+            <canvas id="previewCanvas" hidden></canvas><div id="previewOverlay" class="preview-overlay"></div><div id="regionBox" class="region-box" hidden><span>TRANSLATION REGION</span></div><div id="dragLayer" class="drag-layer" hidden></div>
+          </div>
+          <div class="viewer-bottom"><span id="recognitionInfo">READY WHEN YOU ARE</span><span id="processingTime">—</span></div>
+        </div>
+        <div class="capture-toolbar"><div class="source-control"><span class="eyebrow">CAPTURE SOURCE</span><button id="sourceButton" class="source-button">画面を選択 <span>⌄</span></button></div><div class="mode-control"><span class="eyebrow">TRANSLATION MODE</span><div class="segmented" id="modeButtons"><button data-mode="live" class="selected">リアルタイム</button><button data-mode="region">範囲</button><button data-mode="frame">1フレーム</button></div></div></div>
+        <div class="actionbar"><button id="startButton" class="primary start">▶ 翻訳を開始</button><button id="regionButton" class="quiet">⌖ 範囲を指定</button><button id="resetRegion" class="quiet" hidden>範囲解除</button><label class="check"><input id="overlayEnabled" type="checkbox">画面に重ねる</label><button id="minimizeButton" class="icon-button" title="最小化して視聴">↙</button></div>
+        <div class="result-head"><span class="eyebrow">TRANSCRIPT</span><div><button id="retryButton" class="text-button">再翻訳</button><button id="copyButton" class="text-button">コピー</button></div></div><div id="results" class="results"><p class="muted">翻訳したテキストがここに表示されます。</p></div>
+      </div>
+      <aside class="inspector">
+        <div class="inspector-title"><span class="eyebrow">TRANSLATION</span><button id="openSettings" class="text-button">接続設定 ↗</button></div>
+        <div class="language-pair"><label><span>SOURCE / OCR</span><select id="sourceLanguage" aria-label="認識言語"></select></label><button id="swapLanguages" class="swap" title="言語を入れ替え">⇄</button><label><span>TARGET</span><select id="targetLanguage" aria-label="翻訳先言語"></select></label></div>
+        <p id="verticalHint" class="hint" hidden>縦書きの日本語を認識します。漫画では右から左の読み順も設定できます。</p>
+        <div class="divider"></div><div class="section-title">DISPLAY &amp; TRANSLATION STYLE</div>
+        <div class="styles" id="styleButtons"><button data-style="cinema" class="style selected"><span class="sample cinema">Aa</span><span>Cinema</span></button><button data-style="manga" class="style"><span class="sample manga">漫</span><span>Manga</span></button><button data-style="minimal" class="style"><span class="sample minimal">Aa</span><span>Minimal</span></button><button data-style="literal" class="style"><span class="sample literal">文</span><span>Literal</span></button></div>
+        <p id="styleDescription" class="hint">余韻を残す、短く自然な字幕へ。</p>
+        <div class="section-title spacing">TUNING</div>
+        <label class="range-label" for="fontSize">文字サイズ <output id="fontSizeValue">26 px</output></label><input id="fontSize" type="range" min="14" max="56" value="26">
+        <label class="range-label" for="opacity">背景の濃さ <output id="opacityValue">78%</output></label><input id="opacity" type="range" min="0" max="100" value="78">
+        <label class="toggle-row"><span>原文を併記</span><input type="checkbox" id="showOriginal" checked></label>
+        <label class="toggle-row"><span>キャラクターの口調を維持</span><input type="checkbox" id="preserveTone" checked></label>
+        <label class="toggle-row"><span>原文の上に翻訳を配置</span><input type="checkbox" id="coverOriginal"></label><p class="hint">検出枠を背景で覆います。画像の修復処理は行いません。</p>
+        <label class="field compact"><span>オーバーレイの配置</span><select id="overlayMode"><option value="subtitle">画面下部に字幕</option><option value="positioned">検出した文字の位置</option></select></label>
+        <div class="divider"></div><div class="section-title">CAPTURE OPTIONS</div>
+        <label class="field compact"><span>確認間隔</span><select id="interval"><option value="800">0.8秒</option><option value="1800">1.8秒</option><option value="3000">3秒</option><option value="5000">5秒</option><option value="10000">10秒</option></select></label>
+        <p class="hint">認識・翻訳の完了後に次のフレームを確認します。変化のない画面は送信しません。</p>
+        <label class="field compact"><span>文字認識の補正</span><select id="preprocess"><option value="original">オリジナル</option><option value="contrast">高コントラスト</option><option value="invert">白黒反転</option></select></label>
+        <label class="field compact"><span>漫画の読み順</span><select id="readingOrder"><option value="rtl">右 → 左</option><option value="ltr">左 → 右</option></select></label>
+        <label class="range-label" for="confidence">認識のしきい値 <output id="confidenceValue">45%</output></label><input id="confidence" type="range" min="0" max="95" value="45">
+        <div class="engine-box"><span class="dot"></span><div><b id="engineName">Ollama</b><small id="modelName">モデル未設定</small></div><button id="engineSettings" class="icon-button" title="翻訳サービスを設定">↗</button></div>
+      </aside>
+    </section>
+    <section id="historyView" class="view page-view" hidden><div class="page-heading"><div><span class="eyebrow">YOUR READING JOURNEY</span><h1>翻訳履歴</h1><p>最新300件を端末内に保存。画像・APIキーは含みません。</p></div><div class="inline-actions"><select id="exportFormat" aria-label="書き出し形式"><option value="txt">テキスト</option><option value="json">JSON</option><option value="srt">字幕 SRT</option></select><button id="exportButton" class="quiet">書き出し ↗</button><button id="clearHistory" class="text-button danger">すべて削除</button></div></div><input id="historySearch" type="search" placeholder="原文・訳文で検索" aria-label="翻訳履歴を検索"><div id="historyList" class="history-list"></div></section>
+    <section id="settingsView" class="view page-view" hidden><div class="page-heading"><div><span class="eyebrow">MAKE IT YOUR OWN</span><h1>接続と翻訳設定</h1><p>ローカルモデル、またはお好みの翻訳APIを接続。</p></div><button id="saveSettings" class="primary">設定を保存</button></div><div class="settings-grid"><div class="settings-panel"><h2>翻訳サービス</h2><label class="field"><span>プロバイダー</span><select id="provider"><option value="ollama">Ollama · ローカル</option><option value="compatible">Chat Completions 互換 API</option></select></label><label class="field"><span>接続先 URL</span><input id="endpoint" type="url" placeholder="http://127.0.0.1:11434" spellcheck="false"></label><p class="hint" id="providerHint">Ollamaを起動し、翻訳に使うモデルをインストールしてください。</p><label class="field"><span>APIキー <small id="keyState"></small></span><input id="apiKey" type="password" autocomplete="off" placeholder="変更するときだけ入力"></label><label class="check"><input type="checkbox" id="clearKey">保存済みキーを削除</label><label class="field"><span>モデル名</span><input id="model" list="modelList" placeholder="モデル名を入力、または一覧から選択" spellcheck="false"><datalist id="modelList"></datalist></label><div class="inline-actions"><button id="loadModels" class="quiet">モデル一覧を取得</button><button id="testConnection" class="quiet">接続して試訳</button></div><p id="connectionResult" class="connection-result" role="status"></p></div><div class="settings-panel"><h2>翻訳の文脈</h2><label class="field"><span>作品・場面の情報</span><textarea id="context" rows="4" maxlength="3000" placeholder="例：近未来のSF。主人公は無口な宇宙飛行士。"></textarea></label><label class="field"><span>用語・名前の指定</span><textarea id="glossary" rows="6" maxlength="8000" placeholder="例：Captain → 船長&#10;Aria → アリア"></textarea></label><p class="hint">作品の情報と直近の台詞を参考に、表現の一貫性を保ちます。</p><label class="toggle-row"><span>翻訳履歴を保存する</span><input type="checkbox" id="historyEnabled" checked></label><div class="privacy-note"><span class="eyebrow">YOUR DATA</span><p>文字認識は端末内で実行。認識テキスト・文脈・用語集・直近の原文を選択したサービスへ送信します。画像は送信しません。</p><p>Ollamaをローカルで使用する場合、翻訳も端末内で完結します。初回のOCR言語データ取得にはインターネット接続が必要です。</p></div></div></div></section>
+    <footer><span id="footerStatus">● STANDBY</span><button id="shortcutsButton">Ctrl Shift L <span>翻訳開始・停止</span></button><span>READ THE SCENE.</span></footer>
+  </main>
+  <dialog id="sourceDialog"><div class="dialog-heading"><div><span class="eyebrow">CAPTURE SOURCE</span><h2>どこを翻訳しますか。</h2></div><button class="close-dialog" aria-label="閉じる">×</button></div><p class="hint">ディスプレイは字幕オーバーレイに対応。ウィンドウはプレビュー内で翻訳できます。</p><div id="sourceList" class="source-list"></div><p id="sourceError" class="error"></p></dialog>
+  <dialog id="helpDialog"><div class="dialog-heading"><h2>ショートカット</h2><button class="close-dialog" aria-label="閉じる">×</button></div><dl class="shortcut-list"><dt>Ctrl + Shift + L</dt><dd>翻訳を開始・停止</dd><dt>Ctrl + Shift + R</dt><dd>画面上で範囲指定</dd><dt>Ctrl + Shift + O</dt><dd>字幕オーバーレイを表示・非表示</dd><dt>Ctrl + Shift + H</dt><dd>LumaLensを前面に表示</dd><dt>Esc</dt><dd>範囲指定をキャンセル</dd></dl><p class="hint">他のアプリが同じキーを使用していると、ショートカットを利用できない場合があります。</p></dialog>
+  <div id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="render-subtitles.js"></script>
+  <script src="renderer.js"></script>
+</body></html>

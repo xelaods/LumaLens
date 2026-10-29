@@ -1,5 +1,85 @@
 # LumaLens
 
-Cinematic screen translation workspace for Windows.
+Windowsの画面・ウィンドウ・画像を、物語に馴染む言葉へ。落ち着いた映像編集室をイメージした翻訳アプリです。
 
-Open `index.html` in a browser to explore the interactive prototype. Live capture, OCR, translation services, overlay rendering, and Windows packaging are planned and are not yet implemented.
+## 使い方
+
+1. Windows版インストーラー、またはPortable版を起動します。
+2. 設定でOllama、またはChat Completions互換APIの接続先・モデル・APIキーを指定します。
+3. 「モデル一覧を取得」→モデル選択→「設定を保存」→「接続して試訳」で接続を確認します。
+4. スタジオで画面・ウィンドウを選び、「翻訳を開始」。画像ファイルも開けます。
+
+### Ollamaを使う
+
+[OllamaのWindows版](https://ollama.com/download/windows)を別途インストールし、多言語モデルを取得・起動してください。接続先は `http://127.0.0.1:11434`。インストール済みのモデルを一覧から選択します。Ollama・モデル本体は同梱していません。必要メモリ・品質・速度はモデルとPCに依存します。
+
+### APIを使う
+
+サービスが指定するAPIベースURL（例：`https://api.openai.com/v1`）、キー、Chat CompletionsとJSONモードに対応したモデル名を設定します。接続先末尾の `/chat/completions` は不要です。モデル一覧に対応しないサービスではモデル名を直接入力できます。API料金は利用サービス側で発生します。
+
+## 実装済み
+
+- ディスプレイ／ウィンドウ選択とライブプレビュー
+- リアルタイム、指定範囲、1フレーム、画像ファイル翻訳
+- プレビュー内ドラッグ、または画面上での範囲選択
+- 端末内OCR：英語、日本語・縦書き、韓国語、中国語、仏独西語
+- 自動判定は英語＋日本語。その他の言語は認識言語を指定
+- Cinema／Manga／Minimal／Literalの翻訳と表示
+- 漫画の右→左／左→右の読み順、口調維持、擬音を含む翻訳指示
+- 用語集、作品・場面の文脈、直近3件の原文を利用した翻訳
+- 原文併記、文字サイズ、背景濃度、認識しきい値、コントラスト・白黒反転
+- ディスプレイ上のクリック透過字幕。下部字幕／検出位置への配置
+- 原文枠を背景で覆う重ね合わせ（画像修復やインペイントではありません）
+- フレーム変化検出、同一テキストの30分キャッシュ、重複履歴抑制
+- 中断、接続タイムアウト、試訳、モデル一覧、設定保存
+- 最大300件の履歴、検索、コピー、削除、TXT／JSON／SRT出力
+- Windowsの暗号化機能によるAPIキー保存
+- Windowsインストーラー・Portable版の生成とGitHub Actionsでのビルド
+
+## ショートカット
+
+- `Ctrl + Shift + L`：翻訳開始・停止
+- `Ctrl + Shift + R`：画面上の範囲選択
+- `Ctrl + Shift + O`：字幕表示・非表示
+- `Ctrl + Shift + H`：アプリを前面に戻す
+- `Esc`：範囲選択キャンセル
+
+他のアプリが同じキーを使用していると登録できないことがあります。画面のボタンも利用できます。
+
+## データと動作
+
+Windows 10/11 x64向けです。ディスプレイは字幕オーバーレイに対応し、ウィンドウ・画像はアプリ内で訳を確認します。一部の保護コンテンツ、管理者画面、排他的フルスクリーンは取得・重ね合わせができない場合があります。通常のウィンドウ／ボーダーレス表示を使ってください。
+
+OCRは端末内で実行。初回は選択した言語データをTesseract.js標準配布先から取得し、端末にキャッシュします。画像は翻訳サービスに送信しません。複雑な吹き出し・装飾文字には認識や読み順の誤りが起こります。原文も結果欄で確認できます。
+
+翻訳時には認識テキスト・用語集・場面情報・直近3件の原文を設定先へ送ります。ローカルOllamaなら翻訳も端末内で処理します。APIキーはWindowsで暗号化して保存し、画面に再表示しません。
+
+保存先は通常 `%APPDATA%/lumalens/`。履歴は原文・訳文・日時・文字の位置等を平文で保存します。画像は保存しません。保存を無効にしても既存履歴は残るため、必要なら「すべて削除」を使ってください。作品変更時に履歴を削除すると、直近の原文も翻訳文脈から除去できます。
+
+確認間隔は処理完了後の待機時間です。遅延はOCRとモデルの応答時間に依存し、動画の全フレームを翻訳する方式ではありません。SRTは翻訳完了時刻から作る簡易字幕で、動画の厳密なタイムコードには対応しません。
+
+アプリ自身と字幕ウィンドウはキャプチャ除外を要求するため、他の画面共有にも映らない場合があります。対象がアプリの下にあるときは最小化し、`Ctrl + Shift + H`で戻してください。
+
+## 開発とビルド
+
+Node.js 22.12以降（推奨24 LTS）とnpmを使用します。
+
+```powershell
+npm ci
+npm start
+npm test
+npm run dist
+```
+
+出力は `release/`。`npm run pack` で未圧縮アプリを生成します。コード署名証明書は同梱していないため、Windowsで発行元未確認の表示が出る場合があります。
+
+`node scripts/smoke.cjs` は独立プロファイルで実OCR・画面取得・字幕・範囲指定・履歴を検証します。翻訳にはテスト用ローカルサーバーを使用します。OCRデータ取得とデスクトップへのアクセスが必要です。実際のOllamaや有料APIの品質評価は含みません。
+
+## 公式仕様
+
+- [Electron desktopCapturer](https://www.electronjs.org/docs/latest/api/desktop-capturer)
+- [Tesseract.js API](https://github.com/naptha/tesseract.js/blob/master/docs/api.md)
+- [Ollama Chat API](https://docs.ollama.com/api/chat)
+- [Chat Completions API](https://developers.openai.com/api/reference/resources/chat/subresources/completions/methods/create)
+
+MIT License.
